@@ -21,11 +21,13 @@ import com.google.gson.Gson;
 import com.war.manager.common.models.LogObject;
 import com.war.manager.common.models.UserEntity;
 
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
 
 @Component
 @Order(PriorityOrdered.HIGHEST_PRECEDENCE)
+@Slf4j
 public class AuthenticationFilter implements WebFilter{
 
 	private static final String AUTHENTICATION_HEADER = "authenticationHeader";
@@ -39,19 +41,8 @@ public class AuthenticationFilter implements WebFilter{
 	@Override
 	public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
 		ServerHttpRequest request = exchange.getRequest();
-		ServerHttpResponse response = exchange.getResponse();
-		List<String> authenticationHeader = request.getHeaders().get(AUTHENTICATION_HEADER);
-		UserEntity user = getUserFromAuthenticationHeaders(authenticationHeader);
-		if(nonNullValidateUserLogin(user)) {
-			response.getHeaders().add(AUTHENTICATION_HEADER, authenticationHeader.get(0));
-			logSuccessLogin(user);
-			return chain.filter(exchange);
-		}
-		else {
-			logFailedUserLogin(user);
-			response.setStatusCode(HttpStatusCode.valueOf(401));
-			return exchange.getResponse().setComplete();
-		}
+		UserEntity user = getUserFromAuthenticationHeaders(request.getHeaders().get(AUTHENTICATION_HEADER));
+		return nonNullValidateUserLogin(user, exchange, chain);
 	}
 
 	private void logFailedUserLogin(UserEntity user) {
@@ -62,21 +53,28 @@ public class AuthenticationFilter implements WebFilter{
 		webClient.post().uri(URL_PUSH_LOGS).contentType(MediaType.APPLICATION_JSON).bodyValue(new LogObject(0, gson.toJson(user), APP_NAME, Timestamp.from(Instant.now()), "LOGIN_SUCCESS")).retrieve().bodyToMono(String.class).subscribe();
 	}
 
-	private boolean nonNullValidateUserLogin(final UserEntity user) {
-		if(user==null) return false;
-		try {
-			webClient
-				.post()
-				.uri(URL_VALIDATE_LOGIN)
-				.bodyValue(user)
-				.retrieve()
-				.bodyToMono(UserEntity.class)
-				.subscribe(authUser -> user.setAuthToken(user.getAuthToken()));
+	private Mono<Void> nonNullValidateUserLogin(UserEntity user, ServerWebExchange exchange, WebFilterChain chain) {
+		return webClient
+			.post()
+			.uri(URL_VALIDATE_LOGIN)
+			.bodyValue(user)
+			.retrieve()
+			.bodyToMono(UserEntity.class)
+			.flatMap(authUser -> handleValidatedUserResponse(authUser, exchange, chain))
+			.onErrorResume(error -> exchange.getResponse().setComplete());
+	}
+
+	private Mono<Void> handleValidatedUserResponse(UserEntity user, ServerWebExchange exchange, WebFilterChain chain) {
+		if(user.getAuthToken()!=null && !user.getAuthToken().isBlank()) {
+			exchange.getResponse().getHeaders().add(AUTHENTICATION_HEADER, exchange.getRequest().getHeaders().get(AUTHENTICATION_HEADER).get(0));
+			logSuccessLogin(user);
+			return chain.filter(exchange);
 		}
-		catch(Exception ex) {
-			user.setAuthToken(null);
+		else {
+			logFailedUserLogin(user);
+			exchange.getResponse().setStatusCode(HttpStatusCode.valueOf(401));
+			return exchange.getResponse().setComplete();
 		}
-		return user.getAuthToken()!=null && !user.getAuthToken().isBlank();
 	}
 
 	private UserEntity getUserFromAuthenticationHeaders(List<String> authenticationHeaders) {
@@ -85,6 +83,7 @@ public class AuthenticationFilter implements WebFilter{
 			return gson.fromJson(new String(decoder.decode(authenticationHeaders.get(0))), UserEntity.class);
 		}
 		catch(Exception ex) {
+			log.error("Error while parsing auth header {}", ex.getMessage());
 			return null;
 		}
 	}

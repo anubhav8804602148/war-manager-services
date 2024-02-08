@@ -10,7 +10,7 @@ import com.war.manager.authentication.service.models.TokenEntity;
 
 public interface TokenRepository extends JpaRepository<TokenEntity, Long> {
 
-	@Query(value = "SELECT * FROM TOKEN_ENTITY WHERE TOKEN IN (:subject)", nativeQuery = true)
-	List<TokenEntity> findBlackListedTokenByValue(@Param("subject") String subject);
+	@Query(value = "SELECT * FROM TOKEN_ENTITY WHERE TOKEN IN (:token)", nativeQuery = true)
+	List<TokenEntity> findBlackListedTokenByValue(@Param("token") String token);
 
 }

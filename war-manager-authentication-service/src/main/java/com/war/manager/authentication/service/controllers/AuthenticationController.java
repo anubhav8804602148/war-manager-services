@@ -28,6 +28,7 @@ public class AuthenticationController {
 	private static final String AUTHENTICATION_HEADER = "authenticationHeader";
 	private static Gson gson = new Gson();
 	private static Base64.Encoder encoder = Base64.getEncoder();
+	private static Base64.Decoder decoder = Base64.getDecoder();
 	
 	@PostMapping("/login")
 	public ResponseEntity<UserEntity> login(@RequestBody UserEntity user, ServerWebExchange exchange) throws BadCredentialException {
@@ -45,7 +46,8 @@ public class AuthenticationController {
 	}
 	
 	@GetMapping("/logout")
-	public ResponseEntity<UserEntity> logout(@RequestBody UserEntity user){
+	public ResponseEntity<UserEntity> logout(@RequestBody UserEntity user, ServerWebExchange exchange){
+		user.setAuthToken(gson.fromJson(new String(decoder.decode(exchange.getRequest().getHeaders().getFirst(AUTHENTICATION_HEADER))), UserEntity.class).getAuthToken());
 		return new ResponseEntity<>(authService.logout(user), HttpStatus.OK);
 	}
 }

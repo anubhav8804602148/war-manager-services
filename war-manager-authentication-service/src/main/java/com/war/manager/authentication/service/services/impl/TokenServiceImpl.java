@@ -20,8 +20,10 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.Jwts.SIG;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 public class TokenServiceImpl implements TokenService {
 
 	@Value("${auth.jwt.signingKey}")
@@ -65,16 +67,18 @@ public class TokenServiceImpl implements TokenService {
 					.build()
 					.parseSignedClaims(user.getAuthToken())
 					.getPayload();
-			return !isExpired(payload) && !blackListed(payload);
+			return !isExpired(payload) && !blackListed(user.getAuthToken());
 		}
 		catch(ExpiredJwtException expiredException) {
+			log.error("Auth token expired");
 			return false;
 		}
 		
 	}
 
-	private boolean blackListed(Claims claim) {
-		return !Strings.isBlank(claim.getSubject()) && !tokenRepository.findBlackListedTokenByValue(claim.getSubject()).isEmpty();
+	private boolean blackListed(String token) {
+		System.out.println(token);
+		return !Strings.isBlank(token) && !tokenRepository.findBlackListedTokenByValue(token).isEmpty();
 	}
 	
 	private boolean isExpired(Claims claim) {
@@ -83,6 +87,7 @@ public class TokenServiceImpl implements TokenService {
 
 	@Override
 	public boolean makeTokenInvalid(UserEntity user) {
+		System.out.println(user.getAuthToken());
 		tokenRepository.save(new TokenEntity(0, user.getAuthToken(), user.getUsername()));
 		return true;
 	}
