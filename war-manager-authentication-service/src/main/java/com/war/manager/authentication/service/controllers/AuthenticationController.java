@@ -4,10 +4,7 @@ import java.util.Base64;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseCookie.ResponseCookieBuilder;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,19 +25,18 @@ public class AuthenticationController {
 
 	@Autowired
 	AuthenticationService authService;
-	private static final String AUTHENTICATION_COOKIE = "authenticationCookie";
+	private static final String AUTHENTICATION_HEADER = "authenticationHeader";
 	private static Gson gson = new Gson();
 	private static Base64.Encoder encoder = Base64.getEncoder();
 	
 	@PostMapping("/login")
 	public ResponseEntity<UserEntity> login(@RequestBody UserEntity user, ServerWebExchange exchange) throws BadCredentialException {
-		UserEntity loggedInUser = authService.login(user);
-		ServerHttpResponse response = exchange.getResponse();
-		ResponseCookieBuilder cookieBuilder = ResponseCookie.from(AUTHENTICATION_COOKIE, encoder.encodeToString(gson.toJson(user).getBytes()));
-		cookieBuilder.httpOnly(true);
-		cookieBuilder.secure(true);
-		response.addCookie(cookieBuilder.build());
-		return new ResponseEntity<>(loggedInUser, HttpStatus.OK);
+		user = authService.login(user);
+		exchange
+			.getResponse()
+			.getHeaders()
+			.add(AUTHENTICATION_HEADER, encoder.encodeToString(gson.toJson(user).getBytes()));
+		return new ResponseEntity<>(authService.login(user), HttpStatus.OK);
 	}
 
 	@PostMapping("/validateLogin")

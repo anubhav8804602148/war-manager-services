@@ -1,5 +1,7 @@
 package com.war.manager.authentication.service.services.impl;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +33,11 @@ public class UserServiceImpl implements UserService{
 	public UserEntity createNewUser(UserEntity user) {
 		user.setPassword(passwordService.encodePassword(user.getPassword()));
 		return userRepository.save(user);
+	}
+
+	@Override
+	public List<UserEntity> fetchAllUsers() {
+		return userRepository.findAll();
 	}
 
 }

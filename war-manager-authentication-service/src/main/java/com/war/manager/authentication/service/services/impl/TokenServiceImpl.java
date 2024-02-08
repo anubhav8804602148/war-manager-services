@@ -45,7 +45,7 @@ public class TokenServiceImpl implements TokenService {
 		if (passwordService.validatePassword(user)) {
 			return Jwts
 					.builder()
-					.claim("claim", user.getEmail())
+					.claim("claim", user.getPassword())
 					.issuedAt(new Date(System.currentTimeMillis()))
 					.expiration(new Date(System.currentTimeMillis() + expirationTime))
 					.subject(user.getUsername())
@@ -60,7 +60,7 @@ public class TokenServiceImpl implements TokenService {
 		if(Strings.isBlank(user.getAuthToken())) return false;
 		try {
 			Claims payload = Jwts
-					.parser()				
+					.parser()
 					.verifyWith(signingKey())
 					.build()
 					.parseSignedClaims(user.getAuthToken())

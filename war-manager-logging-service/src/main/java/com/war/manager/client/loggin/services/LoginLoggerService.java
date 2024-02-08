@@ -13,6 +13,8 @@ public class LoginLoggerService {
 	LogEntityRepository logEntityRepository;
 
 	public void saveNewLog(LogEntity logEntity) {
-		logEntityRepository.save(logEntity);
+		if(logEntity!=null && logEntity.getLog()!=null) {
+			logEntityRepository.save(logEntity);
+		}
 	}
 }

@@ -7,10 +7,8 @@ import java.util.List;
 
 import org.springframework.core.PriorityOrdered;
 import org.springframework.core.annotation.Order;
-import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpStatusCode;
-import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseCookie.ResponseCookieBuilder;
+import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
@@ -30,25 +28,22 @@ import reactor.core.publisher.Mono;
 @Order(PriorityOrdered.HIGHEST_PRECEDENCE)
 public class AuthenticationFilter implements WebFilter{
 
-	private static final String AUTHENTICATION_COOKIE = "authenticationCookie";
+	private static final String AUTHENTICATION_HEADER = "authenticationHeader";
 	private static final String URL_PUSH_LOGS = "http://localhost:9999/login/pushLogs";
 	private static final String URL_VALIDATE_LOGIN = "http://localhost:10002/war-manager-authentication-service/authentication/validateLogin";
 	private static WebClient webClient = WebClient.create();
 	private static final String APP_NAME = "war-manager-common";
 	private static Gson gson = new Gson();
 	private static Base64.Decoder decoder = Base64.getDecoder();
-	private static Base64.Encoder encoder = Base64.getEncoder();
 	
 	@Override
 	public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
 		ServerHttpRequest request = exchange.getRequest();
 		ServerHttpResponse response = exchange.getResponse();
-		UserEntity user = getUserFromAuthenticationCookies(request.getCookies().get(AUTHENTICATION_COOKIE));
+		List<String> authenticationHeader = request.getHeaders().get(AUTHENTICATION_HEADER);
+		UserEntity user = getUserFromAuthenticationHeaders(authenticationHeader);
 		if(nonNullValidateUserLogin(user)) {
-			ResponseCookieBuilder cookieBuilder = ResponseCookie.from(AUTHENTICATION_COOKIE, encoder.encodeToString(gson.toJson(user).getBytes()));
-			cookieBuilder.httpOnly(true);
-			cookieBuilder.secure(true);
-			response.addCookie(cookieBuilder.build());
+			response.getHeaders().add(AUTHENTICATION_HEADER, authenticationHeader.get(0));
 			logSuccessLogin(user);
 			return chain.filter(exchange);
 		}
@@ -60,11 +55,11 @@ public class AuthenticationFilter implements WebFilter{
 	}
 
 	private void logFailedUserLogin(UserEntity user) {
-		webClient.post().uri(URL_PUSH_LOGS).bodyValue(new LogObject(0, gson.toJson(user), APP_NAME, Timestamp.from(Instant.now()), "LOGIN_FAILED")).retrieve().bodyToMono(String.class).subscribe();
+		webClient.post().uri(URL_PUSH_LOGS).contentType(MediaType.APPLICATION_JSON).bodyValue(new LogObject(0, gson.toJson(user), APP_NAME, Timestamp.from(Instant.now()), "LOGIN_FAILED")).retrieve().bodyToMono(String.class).subscribe();
 	}
 
 	private void logSuccessLogin(UserEntity user) {
-		webClient.post().uri(URL_PUSH_LOGS).bodyValue(new LogObject(0, gson.toJson(user), APP_NAME, Timestamp.from(Instant.now()), "LOGIN_SUCCESS")).retrieve().bodyToMono(String.class).subscribe();
+		webClient.post().uri(URL_PUSH_LOGS).contentType(MediaType.APPLICATION_JSON).bodyValue(new LogObject(0, gson.toJson(user), APP_NAME, Timestamp.from(Instant.now()), "LOGIN_SUCCESS")).retrieve().bodyToMono(String.class).subscribe();
 	}
 
 	private boolean nonNullValidateUserLogin(final UserEntity user) {
@@ -84,10 +79,10 @@ public class AuthenticationFilter implements WebFilter{
 		return user.getAuthToken()!=null && !user.getAuthToken().isBlank();
 	}
 
-	private UserEntity getUserFromAuthenticationCookies(List<HttpCookie> cookies) {
-		if(cookies==null || cookies.isEmpty() || cookies.get(0)==null || cookies.get(0).getValue()==null || cookies.get(0).getValue().isBlank()) return null;
+	private UserEntity getUserFromAuthenticationHeaders(List<String> authenticationHeaders) {
+		if(authenticationHeaders==null || authenticationHeaders.isEmpty() || authenticationHeaders.get(0)==null || authenticationHeaders.get(0).isBlank()) return null;
 		try{
-			return gson.fromJson(new String(decoder.decode(cookies.get(0).getValue())), UserEntity.class);
+			return gson.fromJson(new String(decoder.decode(authenticationHeaders.get(0))), UserEntity.class);
 		}
 		catch(Exception ex) {
 			return null;
