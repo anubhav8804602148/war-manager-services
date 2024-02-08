@@ -1,6 +1,9 @@
 package com.war.manager.client.scheduler.config;
 
 import java.util.List;
+import java.util.Properties;
+
+import javax.sql.DataSource;
 
 import org.quartz.JobDetail;
 import org.quartz.Trigger;
@@ -49,12 +52,20 @@ public class QuartzConfig {
 
 	@Bean
 	@Primary
-	SchedulerFactoryBean schedulerFactoryBean(Trigger dynamicCronTrigger, JobDetail jobDetail) {
+	SchedulerFactoryBean schedulerFactoryBean(Trigger dynamicCronTrigger, JobDetail jobDetail, DataSource datasource) {
 		SchedulerFactoryBean schedulerFactoryBean = new SchedulerFactoryBean();
 		schedulerFactoryBean.setTriggers(dynamicCronTrigger);
 		schedulerFactoryBean.setJobDetails(jobDetail);
+		schedulerFactoryBean.setDataSource(datasource);
 		schedulerFactoryBean.setWaitForJobsToCompleteOnShutdown(true);
-		schedulerFactoryBean.setAutoStartup(true);
+		schedulerFactoryBean.setAutoStartup(true);		
+		schedulerFactoryBean.setQuartzProperties(quartzProperties());
 		return schedulerFactoryBean;
+	}
+
+	private Properties quartzProperties() {
+		Properties properties = new Properties();
+		properties.setProperty("org.quartz.jobStore.driverDelegateClass", "org.quartz.impl.jdbcjobstore.PostgreSQLDelegate");
+		return properties;
 	}
 }
