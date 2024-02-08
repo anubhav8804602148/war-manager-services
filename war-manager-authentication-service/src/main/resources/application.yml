@@ -1,0 +1,20 @@
+auth:
+  jwt:
+    expirationTime: 3600000
+    signingKey: ANUBHAVSHARMAWARMANAGERAPPLICATIONWITHMEGASIZEANUBHAVSHARMAWARMANAGERAPPLICATIONWITHMEGASIZE
+server:
+  port: 10002
+  servlet:
+    context-path: war-manager-authentication-service
+spring:
+  application:
+    name: war-manager-authentication-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/warmanager
+    username: ${PGADMIN_PASSWORD}
+    password: ${PGADMIN_USERNAME}
+  jpa:
+    hibernate:
+      ddl-auto: update
+  webflux:
+    base-path: war-manager-authentication-service

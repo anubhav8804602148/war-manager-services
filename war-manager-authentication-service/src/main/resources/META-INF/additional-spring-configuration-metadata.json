@@ -1,0 +1,17 @@
+{"properties": [
+  {
+    "name": "auth.jwt.expirationTime",
+    "type": "java.lang.String",
+    "description": "A description for 'auth.jwt.expirationTime'"
+  },
+  {
+    "name": "auth.jwt.signingKey",
+    "type": "java.lang.String",
+    "description": "A description for 'auth.jwt.signingKey'"
+  },
+  {
+    "name": "auth.jwt.expiration-time",
+    "type": "java.lang.String",
+    "description": "A description for 'auth.jwt.expiration-time'"
+  }
+]}
