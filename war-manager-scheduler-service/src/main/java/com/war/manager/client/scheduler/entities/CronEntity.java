@@ -1,6 +1,4 @@
-package com.war.manager.authentication.service.models;
-
-import java.sql.Timestamp;
+package com.war.manager.client.scheduler.entities;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -13,21 +11,19 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+@Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-@Table
-@Entity
-public class TokenEntity {
+@Table(name="CRON_ENTITY")
+public class CronEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
-	private String token;
-	private String username;
-	private boolean valid=true;
-	private Timestamp loggedOutTimestamp;
-	private Timestamp expiryTimestamp;
+	private String jobName;
+	private String jobDescription;
+	private String cronExpression;
 }

@@ -13,4 +13,6 @@ public interface TokenService {
 
 	public boolean makeTokenInvalid(UserEntity user);
 
+	public void cleanupLoggedOutToken();
+
 }

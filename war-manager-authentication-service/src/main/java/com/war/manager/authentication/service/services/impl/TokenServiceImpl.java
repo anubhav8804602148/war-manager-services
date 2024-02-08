@@ -1,6 +1,8 @@
 package com.war.manager.authentication.service.services.impl;
 
 import java.sql.Date;
+import java.sql.Timestamp;
+import java.time.Instant;
 
 import javax.crypto.SecretKey;
 
@@ -87,9 +89,24 @@ public class TokenServiceImpl implements TokenService {
 
 	@Override
 	public boolean makeTokenInvalid(UserEntity user) {
-		System.out.println(user.getAuthToken());
-		tokenRepository.save(new TokenEntity(0, user.getAuthToken(), user.getUsername()));
+		tokenRepository.save(new TokenEntity(0, user.getAuthToken(), user.getUsername(), false, Timestamp.from(Instant.now()), getExpiryTimeFromToken(user.getAuthToken())));
 		return true;
+	}
+	
+	public Timestamp getExpiryTimeFromToken(String token) {
+		return Timestamp.from(Jwts
+				.parser()
+				.verifyWith(signingKey())
+				.build()
+				.parseSignedClaims(token)
+				.getPayload()
+				.getExpiration()
+				.toInstant());
+	}
+
+	@Override
+	public void cleanupLoggedOutToken() {
+		tokenRepository.cleanupLoggedOutToken();
 	}
 
 }
