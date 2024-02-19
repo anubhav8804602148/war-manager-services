@@ -8,7 +8,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.war.manager.authentication.service.exceptions.AccountNotFoundException;
 import com.war.manager.authentication.service.exceptions.BadCredentialException;
+import com.war.manager.authentication.service.exceptions.UserDetailsNotFoundException;
 
 @RestController
 @RestControllerAdvice
@@ -21,4 +23,20 @@ public class ExceptionController {
 		userMessage.put("message", "Bad Credentials");
 		return userMessage;
 	}
+	
+	@ExceptionHandler(AccountNotFoundException.class)
+	public Map<String, String> accountNotFoundMessage(){
+		Map<String, String> userMessage = new HashMap<>();
+		userMessage.put("message", "No such user account");
+		return userMessage;
+	}
+	
+	@ExceptionHandler(UserDetailsNotFoundException.class)
+	public Map<String, String> userDetailsNotFoundMessage(){
+		Map<String, String> userMessage = new HashMap<>();
+		userMessage.put("message", "User Details not found for given user");
+		return userMessage;
+	}
+	
+	
 }

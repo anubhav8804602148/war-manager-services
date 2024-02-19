@@ -18,6 +18,7 @@ public class ProductServiceImpl implements ProductService{
 	
 	@Override
 	public ProductEntity registerNewProduct(ProductEntity product) {
+		if(product==null) return null;
 		return productRepository.save(product);
 	}
 
@@ -29,6 +30,7 @@ public class ProductServiceImpl implements ProductService{
 
 	@Override
 	public ProductEntity updateProductEntity(ProductEntity product) {
+		if(product==null) return null;
 		return productRepository.save(product);
 	}
 

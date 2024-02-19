@@ -17,5 +17,7 @@ public interface UserService {
 	public UserEntity createNewUser(UserEntity user);
 
 	public List<UserEntity> fetchAllUsers();
+
+	public UserEntity updateUser(UserEntity user);
 	
 }

@@ -1,5 +1,6 @@
 package com.war.manager.authentication.service.models;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -24,13 +25,15 @@ public class UserDetailsEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long userDetailsId;
-	@OneToOne
+	@OneToOne(cascade = CascadeType.MERGE)
+	private AccountEntity account;
+	@OneToOne(cascade = CascadeType.MERGE)
 	private UserEntity user;
 	private String firstName;
 	private String lastName;
-	@OneToOne
+	@OneToOne(cascade = CascadeType.MERGE)
 	private ContactEntity contact;
-	@OneToOne
+	@OneToOne(cascade = CascadeType.MERGE)
 	private ContactEntity backupContact;
 	
 }

@@ -1,0 +1,23 @@
+<Configuration strict="true"
+	xmlns="http://logging.apache.org/log4j/2.0/config"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+		http://logging.apache.org/log4j/2.0/config 
+    	https://raw.githubusercontent.com/apache/logging-log4j2/master/log4j-core/src/main/resources/Log4j-config.xsd">
+	<Properties>
+		<Property name="applicationName">${bundle:application:spring.application.name}</Property>
+	</Properties>
+	<Appenders>
+		<RollingFile name="FileOut" fileName="../logs/${applicationName}-local.log" filePattern="../logs/${applicationName}-%d{ddMMYYYYhhmmss}-local.log.gz" ignoreExceptions="false">
+			<PatternLayout>
+        		<Pattern>%d %p %c{1.} [%t] %m%n</Pattern>
+      		</PatternLayout>
+			<SizeBasedTriggeringPolicy size="1MB"/>
+		</RollingFile>
+	</Appenders>
+	<Loggers>
+		<Root level="INFO">
+			<AppenderRef ref="FileOut" />
+		</Root>
+	</Loggers>
+</Configuration>

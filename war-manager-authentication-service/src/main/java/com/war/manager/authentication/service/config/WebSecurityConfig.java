@@ -21,6 +21,7 @@ public class WebSecurityConfig {
 	SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity security) {
 		return security
 				.csrf(req -> req.disable())
+				.cors(req -> req.disable())
 				.build();
 	}
 }

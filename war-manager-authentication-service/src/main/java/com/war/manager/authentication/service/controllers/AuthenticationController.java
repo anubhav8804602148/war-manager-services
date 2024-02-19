@@ -14,9 +14,13 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ServerWebExchange;
 
 import com.google.gson.Gson;
+import com.war.manager.authentication.service.exceptions.AccountNotFoundException;
 import com.war.manager.authentication.service.exceptions.BadCredentialException;
+import com.war.manager.authentication.service.exceptions.UserDetailsNotFoundException;
+import com.war.manager.authentication.service.models.HttpUserRequest;
 import com.war.manager.authentication.service.models.UserEntity;
 import com.war.manager.authentication.service.services.AuthenticationService;
+import com.war.manager.authentication.service.services.PrivilegeService;
 
 @RestController
 @RestControllerAdvice
@@ -25,6 +29,10 @@ public class AuthenticationController {
 
 	@Autowired
 	AuthenticationService authService;
+	
+	@Autowired
+	PrivilegeService privilegeService;
+	
 	private static final String AUTHENTICATION_HEADER = "authenticationHeader";
 	private static Gson gson = new Gson();
 	private static Base64.Encoder encoder = Base64.getEncoder();
@@ -46,8 +54,18 @@ public class AuthenticationController {
 	}
 	
 	@GetMapping("/logout")
-	public ResponseEntity<UserEntity> logout(@RequestBody UserEntity user, ServerWebExchange exchange){
+	public ResponseEntity<UserEntity> logout(ServerWebExchange exchange){
+		UserEntity user = new UserEntity();
 		user.setAuthToken(gson.fromJson(new String(decoder.decode(exchange.getRequest().getHeaders().getFirst(AUTHENTICATION_HEADER))), UserEntity.class).getAuthToken());
 		return new ResponseEntity<>(authService.logout(user), HttpStatus.OK);
+	}
+	
+	@PostMapping("/checkUserPrivilegeForRequest")
+	public ResponseEntity<Boolean> checkUserPrivilegeForRequest(@RequestBody HttpUserRequest request){
+		try {
+			return ResponseEntity.ok(authService.checkUserPrivilegeForRequest(request));
+		} catch (UserDetailsNotFoundException | AccountNotFoundException e) {
+			return ResponseEntity.ok(false);
+		}
 	}
 }

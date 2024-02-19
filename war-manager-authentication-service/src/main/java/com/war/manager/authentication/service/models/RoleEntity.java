@@ -2,7 +2,9 @@ package com.war.manager.authentication.service.models;
 
 import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -27,7 +29,7 @@ public class RoleEntity {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long roleId;
 	private String roleName;
-	@OneToMany
+	@OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
 	private List<PrivilegeEntity> privileges;
 	
 }

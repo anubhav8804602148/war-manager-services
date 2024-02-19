@@ -6,4 +6,6 @@ import com.war.manager.authentication.service.models.RoleEntity;
 
 public interface RoleRepository extends JpaRepository<RoleEntity, Long>{
 
+	RoleEntity getRoleEntityByRoleName(String roleName);
+
 }

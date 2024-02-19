@@ -8,15 +8,24 @@
 		<Property name="applicationName">${bundle:application:spring.application.name}</Property>
 	</Properties>
 	<Appenders>
-		<RollingFile name="FileOut" fileName="../logs/${applicationName}-local.log" filePattern="../logs/${applicationName}-%d{ddMMYYYYhhmmss}-local.log.gz" ignoreExceptions="false">
+		<RollingFile name="FileOut"
+			fileName="../logs/${applicationName}-local.log"
+			filePattern="../logs/${applicationName}-%d{ddMMYYYYhhmmss}-local.log.gz"
+			ignoreExceptions="false">
 			<PatternLayout>
-        		<Pattern>%d %p %c{1.} [%t] %m%n</Pattern>
-      		</PatternLayout>
-			<SizeBasedTriggeringPolicy size="1MB"/>
+				<Pattern>%d %p %c{1.} [%t] %m%n</Pattern>
+			</PatternLayout>
+			<SizeBasedTriggeringPolicy size="1MB" />
 		</RollingFile>
+		<Console name="ConsoleOut" target="SYSTEM_OUT">
+			<PatternLayout>
+				<Pattern>%d %p %c{1.} [%t] %m%n</Pattern>
+			</PatternLayout>
+		</Console>
 	</Appenders>
 	<Loggers>
-		<Root level="INFO">
+		<Root level="INFO" additivity="true">
+			<AppenderRef ref="ConsoleOut"/>
 			<AppenderRef ref="FileOut" />
 		</Root>
 	</Loggers>

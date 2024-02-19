@@ -11,14 +11,14 @@ import com.war.manager.authentication.service.services.PasswordService;
 import com.war.manager.authentication.service.services.UserService;
 
 @Service
-public class UserServiceImpl implements UserService{
+public class UserServiceImpl implements UserService {
 
 	@Autowired
 	PasswordService passwordService;
-	
+
 	@Autowired
 	UserRepository userRepository;
-	
+
 	@Override
 	public UserEntity findUserByUsername(String username) {
 		return userRepository.findUserEntityByUsername(username);
@@ -31,6 +31,8 @@ public class UserServiceImpl implements UserService{
 
 	@Override
 	public UserEntity createNewUser(UserEntity user) {
+		if (user == null)
+			return null;
 		user.setPassword(passwordService.encodePassword(user.getPassword()));
 		return userRepository.save(user);
 	}
@@ -38,6 +40,14 @@ public class UserServiceImpl implements UserService{
 	@Override
 	public List<UserEntity> fetchAllUsers() {
 		return userRepository.findAll();
+	}
+
+	@Override
+	public UserEntity updateUser(UserEntity user) {
+		if (user == null)
+			return null;
+		user.setPassword(passwordService.encodePassword(user.getPassword()));
+		return userRepository.save(user);
 	}
 
 }

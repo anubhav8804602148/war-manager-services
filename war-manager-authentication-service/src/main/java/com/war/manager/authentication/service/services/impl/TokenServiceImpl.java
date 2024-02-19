@@ -79,7 +79,6 @@ public class TokenServiceImpl implements TokenService {
 	}
 
 	private boolean blackListed(String token) {
-		System.out.println(token);
 		return !Strings.isBlank(token) && !tokenRepository.findBlackListedTokenByValue(token).isEmpty();
 	}
 	
